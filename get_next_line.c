@@ -6,34 +6,12 @@
 /*   By: neda-sil <neda-sil@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/30 04:02:06 by neda-sil          #+#    #+#             */
-/*   Updated: 2025/11/30 12:27:27 by neda-sil         ###   ########.fr       */
+/*   Updated: 2025/11/30 21:18:18 by neda-sil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-
-char	*get_next_line(int fd)
-{
-	static char	*stash = NULL;
-	char		*line;
-	
-	if (fd < 0 || BUFFER_SIZE < 0 || read(fd, &line, 0) < 0)
-		return (NULL);
-	line = NULL;
-	read_and_stash(fd, stash);
-	if (!stash)
-		return (NULL);
-	extract_line(stash, line);
-	clean_up_stash(stash);
-	if (!line[0])
-	{
-		free(stash);
-		stash = NULL;
-		free(line);
-		return (NULL);
-	}
-	return (line);
-}
+#include <stdio.h>
 
 void	read_and_stash(int fd, char *stash)
 {
@@ -41,9 +19,6 @@ void	read_and_stash(int fd, char *stash)
 	ssize_t		readed;
 
 	readed = 1;
-	buf = malloc(sizeof(char) * (BUFFER_SIZE + 1));
-	if (!buf)
-		return ;
 	while (!found_newline(stash) && readed != 0)
 	{
 		buf = malloc(sizeof(char) * (BUFFER_SIZE + 1));
@@ -65,9 +40,11 @@ void	add_stash(char	*stash, char *buf, ssize_t readed)
 {
 	char	*tmp;
 
-	tmp = malloc(sizeof(char) * (len(stash) + 1));
-	if (!tmp)
+	if (!stash[0] && buf)
+	{
+		stash = ft_strdup(buf);
 		return ;
+	}
 	tmp = ft_strdup(stash);
 	free(stash);
 	stash = malloc(sizeof(char) * (len(tmp) + readed + 1));
@@ -116,8 +93,30 @@ void	clean_up_stash(char *stash)
 	free(tmp);
 }
 
+char	*get_next_line(int fd)
+{
+	static char	*stash = NULL;
+	char		*line;
+	
+	if (fd < 0 || BUFFER_SIZE < 0 || read(fd, &line, 0) < 0)
+		return (NULL);
+	line = NULL;
+	read_and_stash(fd, stash);
+	if (!stash)
+		return (NULL);
+	extract_line(stash, line);
+	clean_up_stash(stash);
+	if (!line[0])
+	{
+		free(stash);
+		stash = NULL;
+		free(line);
+		return (NULL);
+	}
+	return (line);
+}
+
 #include <fcntl.h>
-#include <stdio.h>
 
 int	main(void)
 {
