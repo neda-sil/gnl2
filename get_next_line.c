@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: neda-sil <neda-sil@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/12/02 16:54:09 by neda-sil          #+#    #+#             */
-/*   Updated: 2025/12/02 21:10:10 by neda-sil         ###   ########.fr       */
+/*   Created: 2025/12/03 22:19:11 by neda-sil          #+#    #+#             */
+/*   Updated: 2025/12/03 22:59:27 by neda-sil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,118 +15,112 @@
 char	*get_next_line(int fd)
 {
 	static char	*stash = NULL;
+	char		*tmp;
 	char		*line;
 
-	if (fd < 0 || BUFFER_SIZE < 0 || read(fd, &line, 0) < 0)
+	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
 	line = NULL;
-	stash = add_stash(fd, stash);
-	if (!stash)
-		return (NULL);
-	line = extract_line(stash);
-	stash = clean_stash(stash);
-	if (!line)
+	tmp = NULL;
+	add_stash(fd, &stash, &tmp);
+	if (!stash && stash[0]) // Ligne changee
+		line = parse_line(&stash, &tmp);
+	if (!line || !line[0])
 	{
-		free(stash);
-		stash = NULL;
-		free(line);
-		line = NULL;
+		free_strs(&stash, &line, &tmp);
 		return (NULL);
 	}
 	return (line);
 }
 
-char	*add_stash(int fd, char *stash)
+void	add_stash(int fd, char **stash, char **tmp)
 {
-	char		*buf;
-	ssize_t		size;
+	char	*buf;
+	int		readed;
 
-	size = 1;
-	while (!found_newline(stash) && size > 0)
+	buf = malloc(sizeof(char) * (BUFFER_SIZE + 1)); /*attention a cette ligne*/
+	if (!buf)
+		return ;
+	readed = 1;
+	while (readed > 0)
 	{
-		buf = malloc(sizeof(char) * BUFFER_SIZE + 1);
-		if (!buf)
-			return (NULL);
-		size = read(fd, &buf, BUFFER_SIZE);
-		if (size < 0)
+		readed = read(fd, buf, BUFFER_SIZE);
+		if (readed == -1)
 		{
-			free(buf);
-			return (stash);
+			free_strs(&buf, stash, tmp);
+			return ;
 		}
-		stash = ft_strjoin(buf, stash);
-		free(buf);
+		buf[readed] = '\0';
+		*tmp = ft_strdup(*stash);
+		free_strs(stash, 0, 0);
+		if (found_newline(*stash))
+			break ;
 	}
-	return (stash);
+	free_strs(&buf, 0, 0);
 }
 
-char	*extract_line(char *stash)
+char	*parse_line(char **stash, char **tmp)
 {
-	int		i;
-	int		newline;
 	char	*line;
 
-	if (!stash)
-		return (NULL);
-	newline = 0;
-	while (stash[newline] && stash[newline] != '\n')
-		newline++;
-	line = malloc(sizeof(char) * (newline + 1));
-	if (!line)
-		return (NULL);
-	i = 0;
-	while (i <= newline)
-	{
-		line[i] = stash[i];
-		i++;
-	}
-	line[i] = '\0';
+	*tmp = ft_strdup(*stash);
+	free_strs(stash, 0, 0);
+	line = before_nl(*tmp);
+	*stash = after_nl(*tmp);
+	free_strs(tmp, 0, 0);
 	return (line);
 }
 
-char	*clean_stash(char *stash)
+char	*before_nl(char *s) // Ligne changee
 {
-	char	*new;
-	int		i;
-	int		newline;
+	char	*res;
+	int		count;
 
-	newline = 0;
-	while (stash[newline] && stash[newline] != '\n')
-		newline++;
-	if (!stash[newline])
-	{
-		free(stash);
+	count = 0;
+	while (!s[count] && s[count] != '\n')
+		count++;
+	if (s[count] && s[count] == '\n')
+		count++;
+	res = ft_calloc(count + 1, sizeof(char)); // Ligne changee
+	if (!res)
 		return (NULL);
-	}
-	new = malloc(sizeof(char) * (ft_strlen(stash) - newline + 1));
-	if (!new)
-		return (NULL);
-	i = 0;
-	while (stash[newline + i])
+	count = 0;
+	while (s[count] && s[count] != '\n')
 	{
-		new[i] = stash[newline + i];
-		i++;
+		res[count] = s[count];
+		count++;
 	}
-	free (stash);
-	return (new);
+	if (s[count] == '\n')
+	{
+		res[count] = s[count];
+		count++;
+	}
+	res[count] = '\0';
+	return (res);
 }
 
-// #include <fcntl.h>
-// #include <stdio.h>
+char	*after_nl(char *s) // Ligne changee
+{
+	char	*res;
+	int		count;
+	int		i;
 
-// int	main(void)
-// {
-// 	int	fd;
-// 	char	*line;
-
-// 	fd = open("./test.txt", O_RDONLY);
-// 	while (1)
-// 	{
-// 		line = get_next_line(fd);
-// 		if (!line)
-// 			return (0);
-// 		printf("%s", line);
-// 		free(line);
-// 	}
-// 	free(line);
-// 	return (0);
-// }
+	i = 0;
+	while (s && s[i] && s[i] != '\n') // Ligne changees
+		i++;
+	if (!s[i] && s[i] != '\n')
+		i++;
+	count = i;
+	while (s && s[count])
+		count++;
+	res = ft_calloc((count - i) + 1, sizeof(char)); // Ligne changee
+	if (!res)
+		return (NULL);
+	count = 0;
+	while (s[count + i])
+	{
+		res[count] = s[count + i];
+		count++;
+	}
+	return (res);
+}
