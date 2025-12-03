@@ -6,7 +6,7 @@
 /*   By: neda-sil <neda-sil@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/02 16:54:11 by neda-sil          #+#    #+#             */
-/*   Updated: 2025/12/02 18:27:45 by neda-sil         ###   ########.fr       */
+/*   Updated: 2025/12/02 19:00:07 by neda-sil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ int	found_newline(char *str)
 	int	i;
 
 	i = 0;
-	while (str[i])
+	while (str && str[i])
 	{
 		if (str[i] != '\n')
 			return (1);
@@ -31,7 +31,7 @@ size_t	ft_strlen(char *str)
 	size_t	i;
 
 	i = 0;
-	while (str[i])
+	while (str && str[i])
 		i++;
 	return (i);
 }
@@ -48,15 +48,14 @@ char	*ft_strjoin(char *s1, char *s2)
 	if (!new)
 		return (NULL);
 	i = 0;
-	while (s1[i])
+	while (s1 && s1[i])
 	{
 		new[i] = s1[i];
 		i++;
 	}
 	j = 0;
-	while (s2[j])
+	while (s2 && s2[j])
 		new[i++] = s2[j++];
 	new[i] = '\0';
-	free(s1);
 	return (new);
 }

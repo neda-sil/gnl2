@@ -6,7 +6,7 @@
 /*   By: neda-sil <neda-sil@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/02 16:54:09 by neda-sil          #+#    #+#             */
-/*   Updated: 2025/12/02 18:30:02 by neda-sil         ###   ########.fr       */
+/*   Updated: 2025/12/02 21:10:10 by neda-sil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,7 @@ char	*extract_line(char *stash)
 
 	if (!stash)
 		return (NULL);
+	newline = 0;
 	while (stash[newline] && stash[newline] != '\n')
 		newline++;
 	line = malloc(sizeof(char) * (newline + 1));
