@@ -6,13 +6,13 @@
 /*   By: neda-sil <neda-sil@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/12/02 16:54:11 by neda-sil          #+#    #+#             */
-/*   Updated: 2025/12/03 22:59:58 by neda-sil         ###   ########.fr       */
+/*   Updated: 2025/12/07 21:35:30 by neda-sil         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-int	found_newline(char *s)
+int	found_nl(const char *s)
 {
 	int	i;
 
@@ -26,23 +26,52 @@ int	found_newline(char *s)
 	return (0);
 }
 
-void	free_strs(char **str1, char **str2, char **str3)
+char	*ft_strjoin_gnl(const char *s1, const char *s2)
 {
-	if (str1 && *str1)
+	char	*s;
+	int		len;
+	int		i;
+
+	len = 0;
+	if (!s1 && !s2)
+		return (NULL);
+	while (s1 && s1[len])
+		len++;
+	i = 0;
+	while (s2 && s2[i])
+		i++;
+	s = ft_calloc(len + i + 1, sizeof(char));
+	if (!s)
+		return (NULL);
+	len = -1;
+	while (s1 && s1[++len])
+		s[len] = s1[len];
+	i = -1;
+	while (s2 && s2[++i])
+		s[len + i] = s2[i];
+	return (s);
+}
+
+char	*ft_strdup(const char *s1)
+{
+	char	*s2;
+	int		i;
+
+	if (!s1)
+		return (ft_strdup(""));
+	i = 0;
+	while (s1[i])
+		i++;
+	s2 = ft_calloc(i + 1, sizeof(char));
+	if (!s2)
+		return (NULL);
+	i = 0;
+	while (s1[i])
 	{
-		free(str1);
-		*str1 = NULL;
+		s2[i] = s1[i];
+		i++;
 	}
-	if (str2 && *str2)
-	{
-		free(*str2);
-		*str2 = NULL;
-	}
-	if (str3 && *str3)
-	{
-		free(*str3);
-		*str3 = NULL;
-	}
+	return (s2);
 }
 
 void	*ft_calloc(size_t nmemb, size_t size)
@@ -65,24 +94,21 @@ void	*ft_calloc(size_t nmemb, size_t size)
 	return (r);
 }
 
-char	*ft_strdup(char *s1)
+void	free_strs(char **str, char **str2, char **str3)
 {
-	char	*s2;
-	int		i;
-
-	if (!s1)
-		return (NULL); // Ligne changee
-	i = 0;
-	while (s1[i])
-		i++;
-	s2 = ft_malloc(i + 1, sizeof(char)); // Ligne changee
-	if (!s2)
-		return (NULL);
-	i = 0;
-	while (s1[i])
+	if (str && *str)
 	{
-		s2[i] = s1[i];
-		i++;
+		free(*str);
+		*str = NULL;
 	}
-	return (s2);
+	if (str2 && *str2)
+	{
+		free(*str2);
+		*str2 = NULL;
+	}
+	if (str3 && *str3)
+	{
+		free(*str3);
+		*str3 = NULL;
+	}
 }
